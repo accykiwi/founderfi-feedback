@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FounderFi — Beta Feedback</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@400;600;700;800&display=swap');
+:root {
+  --green:#00FF88;--green-dim:#00CC6A;--green-faint:rgba(0,255,136,0.07);--green-glow:rgba(0,255,136,0.18);
+  --amber:#FFB347;--amber-faint:rgba(255,179,71,0.07);--amber-glow:rgba(255,179,71,0.2);
+  --red:#FF4466;--blue:#44AAFF;--edit:#FFE566;--edit-faint:rgba(255,229,102,0.07);
+  --bg:#080C09;--surface:#0C120E;--surface2:#111A13;--surface3:#182018;
+  --border:#1A2E1E;--border-bright:#2A5033;--text:#C8FFDA;--muted:#4A7A55;
+  --mono:'Share Tech Mono',monospace;--sans:'Syne',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:var(--mono);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.07) 2px,rgba(0,0,0,0.07) 4px);pointer-events:none;z-index:999;}
+body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at center,transparent 60%,rgba(0,0,0,0.55) 100%);pointer-events:none;z-index:998;}
+
+/* ── HEADER ── */
+.terminal-header{border-bottom:1px solid var(--border-bright);position:sticky;top:0;z-index:200;background:var(--bg);}
+.term-bar{display:flex;align-items:center;gap:8px;padding:0 28px;height:44px;border-bottom:1px solid var(--border);}
+.term-dots{display:flex;gap:6px;margin-right:12px;}
+.term-dot{width:10px;height:10px;border-radius:50%;}
+.term-dot:nth-child(1){background:#FF5F57;}.term-dot:nth-child(2){background:#FEBC2E;}.term-dot:nth-child(3){background:#28C840;}
+.term-title{font-size:11px;color:var(--muted);letter-spacing:1px;flex:1;text-align:center;}
+.term-actions{display:flex;gap:8px;align-items:center;}
+.hdr-btn{font-size:11px;color:var(--muted);letter-spacing:1px;cursor:pointer;border:1px solid var(--border);border-radius:4px;padding:3px 10px;background:none;font-family:var(--mono);transition:all .15s;}
+.hdr-btn:hover{color:var(--text);border-color:var(--muted);}
+.hdr-btn.amber:hover{color:var(--amber);border-color:var(--amber);}
+.hdr-btn.edit-active{color:var(--edit);border-color:var(--edit);background:var(--edit-faint);}
+.hdr-btn.edit-active:hover{color:var(--edit);}
+.hero-bar{padding:20px 28px 18px;display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+.game-title{font-family:var(--sans);font-size:38px;font-weight:800;color:var(--green);letter-spacing:-1px;line-height:1;text-shadow:0 0 28px var(--green-glow);}
+.game-sub{font-size:11px;color:var(--muted);letter-spacing:2px;margin-top:5px;text-transform:uppercase;}
+.part-tabs{display:flex;border:1px solid var(--border-bright);border-radius:6px;overflow:hidden;}
+.part-tab{padding:8px 18px;font-family:var(--mono);font-size:12px;letter-spacing:1px;cursor:pointer;transition:all .15s;color:var(--muted);background:none;border:none;}
+.part-tab.active{background:var(--green-faint);color:var(--green);}
+.part-tab:not(:last-child){border-right:1px solid var(--border-bright);}
+.part-tab .lock{font-size:10px;margin-left:5px;opacity:.5;}
+
+/* ── EDIT MODE BANNER ── */
+.edit-banner{display:none;background:var(--edit-faint);border-bottom:2px solid var(--edit);padding:10px 28px;font-size:12px;color:var(--edit);letter-spacing:1px;align-items:center;gap:12px;}
+.edit-banner.show{display:flex;}
+.edit-banner strong{color:var(--edit);}
+.banner-reset{margin-left:auto;font-size:11px;color:var(--muted);cursor:pointer;border:1px solid var(--border);border-radius:4px;padding:3px 10px;background:none;font-family:var(--mono);transition:all .15s;}
+.banner-reset:hover{color:var(--red);border-color:var(--red);}
+
+/* ── CONTAINER ── */
+.container{max-width:780px;margin:0 auto;padding:36px 24px 100px;position:relative;z-index:1;}
+.part-panel{display:none;}.part-panel.active{display:block;}
+
+/* ── PROGRESS ── */
+.progress-label{font-size:11px;color:var(--muted);text-align:right;margin-bottom:6px;letter-spacing:1px;}
+.progress-bar{height:2px;background:var(--border);margin-bottom:28px;border-radius:2px;overflow:hidden;}
+.progress-fill{height:100%;background:var(--green);transition:width .3s ease;box-shadow:0 0 8px var(--green-glow);}
+.part2 .progress-fill{background:var(--amber);box-shadow:0 0 8px var(--amber-glow);}
+
+/* ── PROMPT INTRO ── */
+.prompt-intro{display:flex;align-items:flex-start;gap:12px;margin-bottom:32px;padding:18px;border:1px solid var(--border-bright);border-left:3px solid var(--green);border-radius:0 8px 8px 0;background:var(--green-faint);}
+.part2 .prompt-intro{border-left-color:var(--amber);background:var(--amber-faint);}
+.prompt-symbol{color:var(--green);font-size:17px;margin-top:2px;flex-shrink:0;}
+.part2 .prompt-symbol{color:var(--amber);}
+.prompt-text{font-size:13px;color:var(--text);line-height:1.6;}
+.prompt-text strong{color:var(--green);}
+.part2 .prompt-text strong{color:var(--amber);}
+.prompt-text .dim{color:var(--muted);font-size:12px;display:block;margin-top:4px;}
+
+/* ── SECTION ── */
+.section{margin-bottom:44px;}
+.section-header{display:flex;align-items:center;gap:12px;margin-bottom:22px;}
+.section-num{font-family:var(--sans);font-size:11px;font-weight:700;color:var(--bg);background:var(--green);padding:2px 8px;border-radius:3px;letter-spacing:1px;}
+.part2 .section-num{background:var(--amber);}
+.section-title{font-family:var(--sans);font-size:13px;font-weight:700;color:var(--green);letter-spacing:2px;text-transform:uppercase;}
+.part2 .section-title{color:var(--amber);}
+.section-line{flex:1;height:1px;background:var(--border-bright);}
+.divider{height:1px;background:var(--border);margin:40px 0;position:relative;}
+.divider::after{content:'///';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:var(--bg);padding:0 12px;font-size:12px;color:var(--border-bright);letter-spacing:3px;}
+
+/* ── QUESTION BLOCK ── */
+.q-block{margin-bottom:28px;position:relative;border-radius:8px;transition:all .15s;}
+.q-block.edit-mode-on{border:1px dashed var(--border-bright);padding:14px;}
+.q-block.edit-mode-on:hover{border-color:var(--edit);background:var(--edit-faint);}
+
+.q-label{font-size:13px;color:var(--text);margin-bottom:12px;line-height:1.5;display:flex;align-items:flex-start;gap:8px;}
+.q-label::before{content:'>';color:var(--green);flex-shrink:0;margin-top:1px;}
+.part2 .q-label::before{color:var(--amber);}
+.q-label-text{flex:1;}
+.q-hint{display:block;font-size:11px;color:var(--muted);margin-top:4px;padding-left:0;}
+
+/* edit button on question */
+.q-edit-btn{position:absolute;top:10px;right:10px;display:none;font-size:10px;letter-spacing:1px;color:var(--bg);background:var(--edit);border:none;border-radius:4px;padding:3px 9px;cursor:pointer;font-family:var(--mono);z-index:10;white-space:nowrap;}
+.edit-mode-on .q-edit-btn{display:block;}
+.q-edit-btn:hover{background:#fff5aa;}
+
+/* ── INPUTS ── */
+.opt-input{display:none;}
+.opt-label{display:flex;align-items:center;gap:10px;padding:11px 16px;border:1px solid var(--border-bright);border-radius:6px;cursor:pointer;font-size:13px;color:var(--muted);transition:all .15s;background:var(--surface);line-height:1.3;margin-bottom:7px;}
+.opt-label::before{content:'[ ]';font-size:11px;flex-shrink:0;color:var(--border-bright);transition:all .15s;}
+.opt-label:hover{border-color:var(--green-dim);color:var(--text);}
+.opt-input:checked + .opt-label{border-color:var(--green);color:var(--green);background:var(--green-faint);}
+.opt-input:checked + .opt-label::before{content:'[✓]';color:var(--green);}
+.part2 .opt-label:hover{border-color:var(--amber);}
+.part2 .opt-input:checked + .opt-label{border-color:var(--amber);color:var(--amber);background:var(--amber-faint);}
+.part2 .opt-input:checked + .opt-label::before{color:var(--amber);}
+
+.pill-row{display:flex;flex-wrap:wrap;gap:8px;}
+.pill-input{display:none;}
+.pill-label{padding:7px 15px;border:1px solid var(--border-bright);border-radius:100px;font-size:12px;color:var(--muted);cursor:pointer;transition:all .15s;background:var(--surface);letter-spacing:.3px;}
+.pill-label:hover{border-color:var(--green-dim);color:var(--text);}
+.pill-input:checked + .pill-label{background:var(--green);border-color:var(--green);color:var(--bg);font-weight:600;}
+.part2 .pill-input:checked + .pill-label{background:var(--amber);border-color:var(--amber);}
+
+.scale-row{display:flex;gap:4px;}
+.scale-input{display:none;}
+.scale-label{flex:1;display:flex;align-items:center;justify-content:center;height:42px;border:1px solid var(--border-bright);border-radius:5px;font-size:13px;cursor:pointer;transition:all .12s;color:var(--muted);background:var(--surface);}
+.scale-label:hover{border-color:var(--green-dim);color:var(--text);}
+.scale-input:checked + .scale-label{background:var(--green);border-color:var(--green);color:var(--bg);font-weight:700;box-shadow:0 0 14px var(--green-glow);}
+.part2 .scale-input:checked + .scale-label{background:var(--amber);border-color:var(--amber);box-shadow:0 0 14px var(--amber-glow);}
+.scale-ends{display:flex;justify-content:space-between;margin-top:6px;font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;padding:0 2px;}
+
+textarea,input[type="text"]{width:100%;background:var(--surface);border:1px solid var(--border-bright);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:13px;padding:12px 14px;outline:none;transition:border-color .2s;caret-color:var(--green);}
+textarea{resize:vertical;min-height:84px;line-height:1.6;}
+textarea::placeholder,input::placeholder{color:var(--muted);}
+textarea:focus,input:focus{border-color:var(--green-dim);box-shadow:0 0 0 3px rgba(0,255,136,0.07);}
+.part2 textarea:focus,.part2 input:focus{border-color:var(--amber);box-shadow:0 0 0 3px rgba(255,179,71,0.07);}
+
+/* ── INLINE QUESTION EDITOR ── */
+.q-editor{display:none;margin-top:14px;background:var(--surface2);border:1px solid var(--edit);border-radius:8px;padding:16px;animation:slideDown .15s ease;}
+.q-editor.open{display:block;}
+@keyframes slideDown{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:translateY(0);}}
+.q-editor-title{font-size:10px;letter-spacing:2px;color:var(--edit);margin-bottom:14px;text-transform:uppercase;}
+.editor-field{margin-bottom:12px;}
+.editor-label{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px;display:block;}
+.editor-input{width:100%;background:var(--bg);border:1px solid var(--border-bright);border-radius:5px;color:var(--text);font-family:var(--mono);font-size:12px;padding:8px 12px;outline:none;transition:border-color .15s;}
+.editor-input:focus{border-color:var(--edit);}
+.editor-textarea{width:100%;background:var(--bg);border:1px solid var(--border-bright);border-radius:5px;color:var(--text);font-family:var(--mono);font-size:12px;padding:8px 12px;outline:none;resize:vertical;min-height:60px;line-height:1.5;transition:border-color .15s;}
+.editor-textarea:focus{border-color:var(--edit);}
+.options-editor{display:flex;flex-direction:column;gap:6px;}
+.option-row-edit{display:flex;gap:6px;align-items:center;}
+.option-row-edit input{flex:1;background:var(--bg);border:1px solid var(--border-bright);border-radius:5px;color:var(--text);font-family:var(--mono);font-size:12px;padding:6px 10px;outline:none;}
+.option-row-edit input:focus{border-color:var(--edit);}
+.opt-del{background:none;border:1px solid var(--border);color:var(--muted);border-radius:4px;width:26px;height:26px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;}
+.opt-del:hover{border-color:var(--red);color:var(--red);}
+.add-opt-btn{font-size:11px;color:var(--muted);background:none;border:1px dashed var(--border-bright);border-radius:5px;padding:6px 12px;cursor:pointer;font-family:var(--mono);transition:all .15s;margin-top:2px;}
+.add-opt-btn:hover{color:var(--edit);border-color:var(--edit);}
+.editor-actions{display:flex;gap:8px;margin-top:14px;}
+.editor-save{flex:1;background:var(--edit);color:var(--bg);border:none;border-radius:5px;font-family:var(--mono);font-size:12px;letter-spacing:2px;padding:9px;cursor:pointer;transition:all .15s;}
+.editor-save:hover{background:#fff5aa;}
+.editor-cancel{background:none;border:1px solid var(--border);color:var(--muted);border-radius:5px;font-family:var(--mono);font-size:12px;letter-spacing:1px;padding:9px 16px;cursor:pointer;transition:all .15s;}
+.editor-cancel:hover{border-color:var(--muted);color:var(--text);}
+
+/* ── SUBMIT ── */
+.submit-btn{width:100%;background:none;border:1px solid var(--green);border-radius:8px;color:var(--green);font-family:var(--mono);font-size:15px;letter-spacing:3px;padding:17px;cursor:pointer;transition:all .2s;text-transform:uppercase;position:relative;overflow:hidden;}
+.submit-btn::before{content:'';position:absolute;inset:0;background:var(--green);transform:scaleX(0);transform-origin:left;transition:transform .28s ease;z-index:0;}
+.submit-btn:hover::before{transform:scaleX(1);}
+.submit-btn:hover{color:var(--bg);box-shadow:0 0 22px var(--green-glow);}
+.submit-btn span{position:relative;z-index:1;}
+.part2 .submit-btn{border-color:var(--amber);color:var(--amber);}
+.part2 .submit-btn::before{background:var(--amber);}
+.part2 .submit-btn:hover{box-shadow:0 0 22px var(--amber-glow);}
+
+/* ── SUCCESS ── */
+.success-screen{display:none;text-align:center;padding:56px 20px;}
+.success-screen .big-icon{font-size:52px;margin-bottom:18px;}
+.success-screen h2{font-family:var(--sans);font-size:30px;font-weight:800;color:var(--green);margin-bottom:12px;text-shadow:0 0 18px var(--green-glow);}
+.success-screen p{font-size:13px;color:var(--muted);line-height:1.7;max-width:420px;margin:0 auto 24px;}
+.p2-card{display:inline-block;border:1px solid var(--amber);border-radius:10px;padding:18px 24px;background:var(--amber-faint);text-align:left;max-width:400px;width:100%;}
+.p2-card-title{font-family:var(--sans);font-weight:700;font-size:12px;color:var(--amber);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;}
+.p2-card p{font-size:12px;color:var(--muted);margin:0 0 14px;}
+.p2-open-btn{display:block;width:100%;background:none;border:1px solid var(--amber);border-radius:6px;color:var(--amber);font-family:var(--mono);font-size:13px;letter-spacing:2px;padding:11px;cursor:pointer;transition:all .2s;text-align:center;text-transform:uppercase;}
+.p2-open-btn:hover{background:var(--amber);color:var(--bg);}
+
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+.cursor{display:inline-block;width:8px;height:14px;background:var(--green);vertical-align:middle;margin-left:4px;animation:blink 1s step-end infinite;}
+</style>
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<div class="terminal-header">
+  <div class="term-bar">
+    <div class="term-dots"><div class="term-dot"></div><div class="term-dot"></div><div class="term-dot"></div></div>
+    <div class="term-title" id="termTitle">feedback_terminal — beta_v0.3.0</div>
+    <div class="term-actions">
+      <button class="hdr-btn amber" onclick="adminSkip()">SKIP TO P2</button>
+      <button class="hdr-btn" id="editToggleBtn" onclick="toggleEditMode()">✏ EDIT QUESTIONS</button>
+      <button class="hdr-btn" id="resetBtn" onclick="resetQuestions()" style="display:none;color:var(--red);border-color:rgba(255,68,102,.4);">RESET DEFAULT</button>
+    </div>
+  </div>
+  <div class="hero-bar">
+    <div>
+      <div class="game-title" id="mainTitle">Ship or Rug<span class="cursor"></span></div>
+      <div class="game-sub" id="partSubtitle">Part 1 of 2 — First Run Debrief</div>
+    </div>
+    <div class="part-tabs">
+      <button class="part-tab active" id="tab1" onclick="showPart(1)">PART 1</button>
+      <button class="part-tab" id="tab2" onclick="showPart(2)">PART 2 <span class="lock" id="lockIcon">🔒</span></button>
+    </div>
+  </div>
+</div>
+
+<div class="edit-banner" id="editBanner">
+  <span>✏ <strong>EDIT MODE ON</strong> — Click any question's EDIT button to modify it. Changes save automatically.</span>
+  <button class="banner-reset" onclick="resetQuestions()">RESET ALL TO DEFAULT</button>
+</div>
+
+<div class="container">
+
+  <!-- ══ PART 1 ══ -->
+  <div class="part-panel active" id="part1Panel">
+    <div class="prompt-intro">
+      <div class="prompt-symbol">$</div>
+      <div class="prompt-text">
+        <strong>Fill this out after your first run.</strong>
+        <span class="dim">First impressions only — don't overthink it. Part 2 unlocks after you've exited at least once and started a second run.</span>
+      </div>
+    </div>
+    <div class="progress-label" id="p1-prog-label">0 / 14 answered</div>
+    <div class="progress-bar"><div class="progress-fill" id="p1-prog" style="width:0%"></div></div>
+    <form id="form1"></form>
+    <div class="success-screen" id="p1-success">
+      <div class="big-icon">📡</div>
+      <h2>Run 1 Debrief Filed</h2>
+      <p>Part 1 received. Come back after you've exited your first company and started a second run — that's when Part 2 opens.</p>
+      <div class="p2-card">
+        <div class="p2-card-title">Part 2 Unlocked</div>
+        <p>Prestige loop, economy clarity, system usage, offline behavior, and FOUNDER earn mechanic. The deep stuff.</p>
+        <button class="p2-open-btn" onclick="unlockAndShowPart2()">OPEN PART 2 →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PART 2 ══ -->
+  <div class="part-panel part2" id="part2Panel">
+    <div class="prompt-intro">
+      <div class="prompt-symbol">$</div>
+      <div class="prompt-text">
+        <strong>You've exited at least once. Now we go deeper.</strong>
+        <span class="dim">Prestige loop, economy, system usage, offline behavior, and the FOUNDER earn mechanic. Be brutal — this is what changes the next build.</span>
+      </div>
+    </div>
+    <div class="progress-label" id="p2-prog-label">0 / 16 answered</div>
+    <div class="progress-bar"><div class="progress-fill" id="p2-prog" style="width:0%"></div></div>
+    <form id="form2"></form>
+    <div class="success-screen" id="p2-success">
+      <div class="big-icon">🚀</div>
+      <h2 style="color:var(--amber);text-shadow:0 0 18px var(--amber-glow);">Full Debrief Filed</h2>
+      <p>Both parts received. Watch <strong style="color:var(--amber)">#beta-announcements</strong> — this feedback directly shapes the next build.</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// GOOGLE APPS SCRIPT ENDPOINT — paste your URL here after deploying
+// ═══════════════════════════════════════════════
+const APPS_SCRIPT_URL = 'PASTE_YOUR_APPS_SCRIPT_URL_HERE';
+
+// ═══════════════════════════════════════════════
+// DEFAULT QUESTIONS DATA
+// ═══════════════════════════════════════════════
+const DEFAULT_QUESTIONS = {
+  part1: [
+    {
+      id: "p1_tester", sectionNum: "00", sectionTitle: "Tester Info",
+      questions: [
+        { id: "discord", type: "text", label: "Discord handle", hint: "", name: "discord", placeholder: "username#0000", options: [] }
+      ]
+    },
+    {
+      id: "p1_onboarding", sectionNum: "01", sectionTitle: "Onboarding",
+      questions: [
+        {
+          id: "first_blocker", type: "radio", name: "first_blocker",
+          label: "What was the first thing that stopped your progress?",
+          hint: "",
+          options: ["Couldn't figure out I needed to place desks before hiring", "Didn't know I needed servers + networking before launching a project", "Wasn't sure what employee types to hire", "Didn't understand what resources a project needed", "Nothing blocked me — it was smooth"]
+        },
+        {
+          id: "infra_clarity", type: "radio", name: "infra_clarity",
+          label: "Did it feel obvious that you had to set things up in a specific order — desks before hiring, servers before launching a project?",
+          hint: "",
+          options: ["Yes, the order made sense right away", "Kind of — figured it out after a couple of attempts", "Not really — kept trying things that weren't working yet", "Still not sure what order things are supposed to go in"]
+        },
+        {
+          id: "first_confusion_open", type: "textarea", name: "first_confusion_open",
+          label: "What was the first moment you were genuinely confused? Describe it.",
+          hint: "Be specific — which screen, which action, what did you expect to happen",
+          placeholder: "I tried to hire someone and nothing happened because I hadn't placed a desk yet...",
+          options: []
+        }
+      ]
+    },
+    {
+      id: "p1_aha", sectionNum: "02", sectionTitle: "The Aha Moment",
+      questions: [
+        {
+          id: "aha_timing", type: "radio", name: "aha_timing",
+          label: "Did the game ever 'click' — a moment where you understood what you were building toward?",
+          hint: "",
+          options: ["Yes — within the first few minutes", "Yes — took most of the session to get there", "Briefly, then lost it", "Not really — still fuzzy on the long-term goal"]
+        },
+        {
+          id: "aha_moment", type: "radio", name: "aha_moment",
+          label: "Which moment felt most satisfying in your first session?",
+          hint: "",
+          options: ["First project deploying and generating income", "Watching my company value number climb", "Completing a quest and getting FOUNDER tokens", "Hiring enough people to fill the office", "Nothing stood out as satisfying"]
+        }
+      ]
+    },
+    {
+      id: "p1_discovery", sectionNum: "03", sectionTitle: "Feature Discovery",
+      questions: [
+        {
+          id: "found_features", type: "checkbox", name: "found_features",
+          label: "Which of these did you find and actually use in your first session?",
+          hint: "Check all that apply",
+          options: ["Daily quests", "Office furnishing (buying items for revenue bonuses)", "Research tree", "Reputation system", "Minigames (Arcade)", "PR / Marketing tab", "Leaderboard", "Employee specializations / training"]
+        },
+        {
+          id: "missed_features", type: "checkbox", name: "missed_features",
+          label: "Which of these did you NOT know existed until after your session?",
+          hint: "Honest answers — this tells us what we're hiding",
+          options: ["Daily quests", "Office furnishing gives +50% revenue cap", "Research tree", "Reputation affects income multiplier", "Minigames give temporary buffs", "Employee specializations unlock new projects", "Diminishing returns on exits (3 in 7 days = 50% penalty)"]
+        }
+      ]
+    },
+    {
+      id: "p1_exit_understanding", sectionNum: "04", sectionTitle: "Exit Mechanic",
+      questions: [
+        {
+          id: "exit_why", type: "radio", name: "exit_why",
+          label: "Before your first exit (or end of session), did you understand WHY you should exit?",
+          hint: "Exit resets cash but gives FOUNDER tokens + Legacy Points that permanently buff future runs",
+          options: ["Yes — totally clear, understood the compounding legacy benefit", "Vaguely — knew it was good but not why", "Not really — exited because the game suggested it", "Didn't exit / didn't know I could"]
+        },
+        {
+          id: "buyout_ipo", type: "radio", name: "buyout_ipo",
+          label: "Could you explain the difference between Buyout and IPO?",
+          hint: "",
+          options: ["Yes — knew Buyout is faster/smaller, IPO is 7 days minimum but 1.5x FOUNDER payout", "Rough idea — IPO seems better but didn't know the specifics", "No — just picked one without really knowing why", "Didn't know there were two options"]
+        },
+        {
+          id: "legacy_clarity", type: "radio", name: "legacy_clarity",
+          label: "Did you understand what Legacy Points do before your first exit?",
+          hint: "",
+          options: ["Yes — permanent income + starting cash bonuses on every future run", "Somewhat — knew they were good but not the specific bonuses", "Not at all — exited first, read about it after", "Still don't fully understand"]
+        }
+      ]
+    },
+    {
+      id: "p1_feel", sectionNum: "05", sectionTitle: "First Impression",
+      questions: [
+        {
+          id: "fun_score", type: "scale", name: "fun_score",
+          label: "How fun was your first session, honestly?",
+          hint: "",
+          scaleMin: "not fun", scaleMax: "addicted",
+          options: ["0","1","2","3","4","5","6","7","8","9","10"]
+        },
+        {
+          id: "come_back", type: "radio", name: "come_back",
+          label: "Would you have kept playing if there was more content ready?",
+          hint: "",
+          options: ["Yes — I'd load it up right now", "Probably, if some things were smoother", "Unsure — depends on what changes", "Probably not"]
+        },
+        {
+          id: "one_fix", type: "textarea", name: "one_fix",
+          label: "If you could fix one thing before the next build, what is it?",
+          hint: "Be specific. This is the most useful question on the form.",
+          placeholder: "The desk requirement before hiring is completely invisible — I tried to hire 3 times before figuring it out...",
+          options: []
+        }
+      ]
+    }
+  ],
+  part2: [
+    {
+      id: "p2_who", sectionNum: "00", sectionTitle: "Tester Info",
+      questions: [
+        { id: "discord2", type: "text", label: "Discord handle", hint: "", name: "discord2", placeholder: "username#0000", options: [] }
+      ]
+    },
+    {
+      id: "p2_prestige", sectionNum: "04", sectionTitle: "Prestige Loop",
+      questions: [
+        {
+          id: "post_exit_feel", type: "radio", name: "post_exit_feel",
+          label: "After your first exit, did the Legacy bonuses feel meaningful on your next run?",
+          hint: "",
+          options: ["Yes — the income boost and starting cash felt noticeably different", "Slightly — could tell something changed but it wasn't dramatic", "Not really — felt like I was starting from scratch again", "Didn't notice any difference at all"]
+        },
+        {
+          id: "diminishing_returns", type: "radio", name: "diminishing_returns",
+          label: "Did you know about the diminishing returns penalty (3 exits in 7 days = 50% payout reduction)?",
+          hint: "",
+          options: ["Yes — planned my exits around it", "Discovered it the hard way — got penalized without knowing", "Saw it mentioned somewhere but didn't fully understand it", "Had no idea this existed"]
+        },
+        {
+          id: "exit_strategy", type: "radio", name: "exit_strategy",
+          label: "Which exit strategy did you mostly lean toward?",
+          hint: "",
+          options: ["Buyout always — faster, keep the cycle moving", "IPO always — 1.5x FOUNDER multiplier is worth the wait", "Mixed — depended on company value", "Still figuring out when to exit at all"]
+        }
+      ]
+    },
+    {
+      id: "p2_economy", sectionNum: "05", sectionTitle: "Economy Legibility",
+      questions: [
+        {
+          id: "income_understanding", type: "radio", name: "income_understanding",
+          label: "Could you explain what was affecting your net income at any given moment?",
+          hint: "Net income = project revenue - salaries - HQ daily cost - maintenance fees",
+          options: ["Yes — understood all the moving parts (revenue, salaries, HQ cost, maintenance)", "Mostly — knew the big levers but not every variable", "Partially — knew projects made money and employees cost money", "Not really — the number just went up and down"]
+        },
+        {
+          id: "negative_income", type: "radio", name: "negative_income",
+          label: "Did you ever go negative net income without understanding why?",
+          hint: "",
+          options: ["Yes — it happened and I had no idea what caused it", "Yes — it happened but I figured it out quickly", "Got close but caught it in time", "Never went negative"]
+        },
+        {
+          id: "growth_stall", type: "checkbox", name: "growth_stall",
+          label: "Where did your growth stall across your runs?",
+          hint: "Check all that apply",
+          options: ["Early cash (buying desks + infrastructure ate everything)", "HQ upgrade cost felt like an impossible wall", "Employee salary drain outpaced project revenue", "Infrastructure bottleneck (ran out of compute or bandwidth)", "Didn't know what to build toward next", "Growth never really stalled"]
+        }
+      ]
+    },
+    {
+      id: "p2_systems", sectionNum: "06", sectionTitle: "System Engagement",
+      questions: [
+        {
+          id: "used_systems", type: "checkbox", name: "used_systems",
+          label: "Which systems did you actively engage with across multiple runs?",
+          hint: "Check all that genuinely shaped your decisions",
+          options: ["Office furnishing (buying items for revenue bonuses)", "Research tree", "Employee specializations / training", "Minigames (Arcade buffs)", "PR / Reputation management", "Daily and weekly quests", "Leaderboard / competitive rank", "Marketing (hiring Marketers for revenue %)"]
+        },
+        {
+          id: "ignored_systems", type: "checkbox", name: "ignored_systems",
+          label: "Which systems did you mostly ignore or forget existed?",
+          hint: "",
+          options: ["Office furnishing", "Research tree", "Employee specializations / training", "Minigames", "PR / Reputation", "Quests", "Leaderboard", "Marketing employees"]
+        }
+      ]
+    },
+    {
+      id: "p2_offline", sectionNum: "07", sectionTitle: "Offline Behavior",
+      questions: [
+        {
+          id: "return_trigger", type: "radio", name: "return_trigger",
+          label: "When you left the game running and came back later, what brought you back?",
+          hint: "Idle games live on return behavior — this is critical data",
+          options: ["Quest cooldown reset — wanted to claim daily rewards", "Curiosity about how much income I'd earned", "Pushed a notification / set a reminder myself", "Just habit — checked in when I remembered", "Didn't leave it running / I closed it each time"]
+        },
+        {
+          id: "session_gap", type: "radio", name: "session_gap",
+          label: "How long did you typically leave the game running between check-ins?",
+          hint: "",
+          options: ["Less than 1 hour", "1 to 4 hours", "4 to 12 hours", "Overnight (8-12 hours)", "Multiple days"]
+        }
+      ]
+    },
+    {
+      id: "p2_founder", sectionNum: "08", sectionTitle: "FOUNDER Token & Earn",
+      questions: [
+        {
+          id: "founder_clarity", type: "radio", name: "founder_clarity",
+          label: "How clear is it how FOUNDER tokens translate to real-world value?",
+          hint: "",
+          options: ["Crystal clear — I know exactly what they're worth and how to use them", "Rough idea — understand they have value but not the specifics", "Vague — I earn them but don't fully know what they do outside the game", "No idea — just a number in my HUD"]
+        },
+        {
+          id: "earn_changes_play", type: "radio", name: "earn_changes_play",
+          label: "Did knowing you could earn real value change how you played?",
+          hint: "",
+          options: ["Yes — made every exit decision feel more significant", "Slightly — was aware of it but didn't change my approach much", "Not really — played it like a normal game", "Made it feel stressful — less fun knowing there was money involved"]
+        },
+        {
+          id: "earn_achievable", type: "radio", name: "earn_achievable",
+          label: "Does earning meaningful value from the game feel achievable, or theoretical?",
+          hint: "",
+          options: ["Achievable — I can see a clear path to meaningful earnings", "Possible but unclear — feels like it requires a lot of time", "Theoretical — sounds good but doesn't feel real", "I don't understand the earn mechanic well enough to say"]
+        }
+      ]
+    },
+    {
+      id: "p2_retention", sectionNum: "09", sectionTitle: "Retention Signals",
+      questions: [
+        {
+          id: "nps", type: "scale", name: "nps",
+          label: "Would you recommend FounderFi to someone in crypto?",
+          hint: "",
+          scaleMin: "never", scaleMax: "already did",
+          options: ["0","1","2","3","4","5","6","7","8","9","10"]
+        },
+        {
+          id: "tell_friend", type: "textarea", name: "tell_friend",
+          label: "What's the one thing that would make you tell a friend about this game?",
+          hint: "",
+          placeholder: "If the FOUNDER token payouts actually felt meaningful week to week...",
+          options: []
+        },
+        {
+          id: "stopping_rec", type: "textarea", name: "stopping_rec",
+          label: "What's the one thing stopping you from recommending it right now?",
+          hint: "",
+          placeholder: "The onboarding is too rough — my friends would quit in the first 5 minutes...",
+          options: []
+        }
+      ]
+    }
+  ]
+};
+
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+let questions = loadQuestions();
+let editMode = false;
+let part2Unlocked = localStorage.getItem('ff-p2-unlocked') === 'true';
+let openEditorId = null;
+
+function loadQuestions() {
+  try {
+    const saved = localStorage.getItem('ff-questions');
+    return saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_QUESTIONS));
+  } catch(e) {
+    return JSON.parse(JSON.stringify(DEFAULT_QUESTIONS));
+  }
+}
+
+function saveQuestions() {
+  localStorage.setItem('ff-questions', JSON.stringify(questions));
+}
+
+function resetQuestions() {
+  if (!confirm('Reset all questions to default? Your edits will be lost.')) return;
+  questions = JSON.parse(JSON.stringify(DEFAULT_QUESTIONS));
+  saveQuestions();
+  renderAll();
+}
+
+// ═══════════════════════════════════════════════
+// RENDER ENGINE
+// ═══════════════════════════════════════════════
+function renderAll() {
+  renderForm('form1', questions.part1, 1);
+  renderForm('form2', questions.part2, 2);
+  setupProgress('form1', 'p1-prog', 'p1-prog-label', 14);
+  setupProgress('form2', 'p2-prog', 'p2-prog-label', 16);
+}
+
+function renderForm(formId, sections, part) {
+  const form = document.getElementById(formId);
+  let html = '';
+  sections.forEach((section, si) => {
+    const isFirst = si === 0;
+    if (!isFirst) html += `<div class="divider"></div>`;
+    html += `<div class="section">
+      <div class="section-header">
+        <div class="section-num">${section.sectionNum}</div>
+        <div class="section-title">${section.sectionTitle}</div>
+        <div class="section-line"></div>
+      </div>`;
+    section.questions.forEach(q => {
+      html += renderQuestion(q, section.id, part);
+    });
+    html += `</div>`;
+  });
+  html += `<button type="submit" class="submit-btn"><span>SUBMIT PART ${part} — DEBRIEF FILED</span></button>`;
+  form.innerHTML = html;
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    form.style.display = 'none';
+    document.getElementById(`p${part}-success`).style.display = 'block';
+    if (part === 1) {
+      part2Unlocked = true;
+      localStorage.setItem('ff-p2-unlocked', 'true');
+      updateLock();
+    }
+    const data = {};
+    new FormData(form).forEach((v,k) => { data[k] = data[k] ? [].concat(data[k],v) : v; });
+    data.part = part; data.timestamp = new Date().toISOString();
+    // Flatten arrays to comma-separated strings for Sheets readability
+    const payload = {};
+    Object.entries(data).forEach(([k, v]) => {
+      payload[k] = Array.isArray(v) ? v.join(', ') : v;
+    });
+    if (APPS_SCRIPT_URL && APPS_SCRIPT_URL !== 'PASTE_YOUR_APPS_SCRIPT_URL_HERE') {
+      fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    }
+  });
+}
+
+function renderQuestion(q, sectionId, part) {
+  const editBtn = `<button type="button" class="q-edit-btn" onclick="openEditor('${q.id}','${sectionId}',${part})">EDIT</button>`;
+  let inner = '';
+
+  if (q.type === 'text') {
+    inner = `<input type="text" name="${q.name}" placeholder="${q.placeholder||''}">`;
+  } else if (q.type === 'textarea') {
+    inner = `<textarea name="${q.name}" placeholder="${q.placeholder||''}"></textarea>`;
+  } else if (q.type === 'radio') {
+    inner = q.options.map((opt, i) =>
+      `<input type="radio" name="${q.name}" id="${q.id}_${i}" value="${opt}" class="opt-input">
+       <label for="${q.id}_${i}" class="opt-label">${opt}</label>`
+    ).join('');
+  } else if (q.type === 'checkbox') {
+    inner = q.options.map((opt, i) =>
+      `<input type="checkbox" name="${q.name}" id="${q.id}_${i}" value="${opt}" class="opt-input">
+       <label for="${q.id}_${i}" class="opt-label">${opt}</label>`
+    ).join('');
+  } else if (q.type === 'pills') {
+    inner = `<div class="pill-row">` + q.options.map((opt, i) =>
+      `<input type="radio" name="${q.name}" id="${q.id}_${i}" value="${opt}" class="pill-input">
+       <label for="${q.id}_${i}" class="pill-label">${opt}</label>`
+    ).join('') + `</div>`;
+  } else if (q.type === 'scale') {
+    inner = `<div class="scale-row">` +
+      q.options.map((val, i) =>
+        `<input type="radio" name="${q.name}" id="${q.id}_sc${i}" value="${val}" class="scale-input">
+         <label for="${q.id}_sc${i}" class="scale-label">${val}</label>`
+      ).join('') +
+      `</div><div class="scale-ends"><span>${q.scaleMin||''}</span><span>${q.scaleMax||''}</span></div>`;
+  }
+
+  const hintHtml = q.hint ? `<span class="q-hint">${q.hint}</span>` : '';
+
+  return `<div class="q-block" id="qblock_${q.id}">
+    ${editBtn}
+    <div class="q-label"><span class="q-label-text">${q.label}${hintHtml}</span></div>
+    ${inner}
+    <div class="q-editor" id="qeditor_${q.id}"></div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════
+// EDITOR
+// ═══════════════════════════════════════════════
+function openEditor(qId, sectionId, part) {
+  if (openEditorId && openEditorId !== qId) closeEditor(openEditorId);
+  openEditorId = qId;
+
+  const q = findQuestion(qId, part);
+  if (!q) return;
+
+  const editorEl = document.getElementById('qeditor_' + qId);
+  if (!editorEl) return;
+
+  const hasOptions = ['radio','checkbox','pills'].includes(q.type);
+  const isScale = q.type === 'scale';
+
+  let optionsHtml = '';
+  if (hasOptions) {
+    optionsHtml = `<div class="editor-field">
+      <label class="editor-label">Options</label>
+      <div class="options-editor" id="opts_${qId}">
+        ${q.options.map((opt,i) => `
+          <div class="option-row-edit" id="optrow_${qId}_${i}">
+            <input type="text" value="${escHtml(opt)}" oninput="updateOption('${qId}','${sectionId}',${part},${i},this.value)" placeholder="Option text">
+            <button type="button" class="opt-del" onclick="removeOption('${qId}','${sectionId}',${part},${i})" title="Remove">×</button>
+          </div>`).join('')}
+      </div>
+      <button type="button" class="add-opt-btn" onclick="addOption('${qId}','${sectionId}',${part})">+ Add option</button>
+    </div>`;
+  }
+
+  let scaleHtml = '';
+  if (isScale) {
+    scaleHtml = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="editor-field">
+        <label class="editor-label">Left label</label>
+        <input class="editor-input" value="${escHtml(q.scaleMin||'')}" oninput="updateScaleLabel('${qId}','${sectionId}',${part},'scaleMin',this.value)">
+      </div>
+      <div class="editor-field">
+        <label class="editor-label">Right label</label>
+        <input class="editor-input" value="${escHtml(q.scaleMax||'')}" oninput="updateScaleLabel('${qId}','${sectionId}',${part},'scaleMax',this.value)">
+      </div>
+    </div>`;
+  }
+
+  editorEl.innerHTML = `
+    <div class="q-editor-title">✏ EDITING QUESTION</div>
+    <div class="editor-field">
+      <label class="editor-label">Question text</label>
+      <textarea class="editor-textarea" oninput="updateQLabel('${qId}','${sectionId}',${part},this.value)">${escHtml(q.label)}</textarea>
+    </div>
+    <div class="editor-field">
+      <label class="editor-label">Hint / sub-label <span style="color:var(--muted)">(optional)</span></label>
+      <input class="editor-input" value="${escHtml(q.hint||'')}" oninput="updateQHint('${qId}','${sectionId}',${part},this.value)" placeholder="e.g. Check all that apply">
+    </div>
+    ${optionsHtml}
+    ${scaleHtml}
+    <div class="editor-actions">
+      <button type="button" class="editor-cancel" onclick="closeEditor('${qId}')">CLOSE</button>
+      <button type="button" class="editor-save" onclick="closeEditor('${qId}')">DONE ✓</button>
+    </div>`;
+
+  editorEl.classList.add('open');
+}
+
+function closeEditor(qId) {
+  const el = document.getElementById('qeditor_' + qId);
+  if (el) el.classList.remove('open');
+  if (openEditorId === qId) openEditorId = null;
+}
+
+function findQuestion(qId, part) {
+  const sections = part === 1 ? questions.part1 : questions.part2;
+  for (const s of sections) {
+    for (const q of s.questions) {
+      if (q.id === qId) return q;
+    }
+  }
+  return null;
+}
+
+function updateQLabel(qId, sectionId, part, val) {
+  const q = findQuestion(qId, part);
+  if (q) { q.label = val; saveQuestions(); refreshQLabel(qId, val); }
+}
+
+function updateQHint(qId, sectionId, part, val) {
+  const q = findQuestion(qId, part);
+  if (q) { q.hint = val; saveQuestions(); refreshQLabel(qId, q.label, val); }
+}
+
+function refreshQLabel(qId, label, hint) {
+  const block = document.getElementById('qblock_' + qId);
+  if (!block) return;
+  const labelEl = block.querySelector('.q-label-text');
+  if (labelEl) {
+    const hintHtml = hint ? `<span class="q-hint">${hint}</span>` : '';
+    labelEl.innerHTML = label + hintHtml;
+  }
+}
+
+function updateOption(qId, sectionId, part, idx, val) {
+  const q = findQuestion(qId, part);
+  if (q && q.options[idx] !== undefined) { q.options[idx] = val; saveQuestions(); }
+}
+
+function removeOption(qId, sectionId, part, idx) {
+  const q = findQuestion(qId, part);
+  if (!q) return;
+  q.options.splice(idx, 1);
+  saveQuestions();
+  // Re-render just this editor
+  openEditor(qId, sectionId, part);
+  // Re-render the input options
+  refreshInputOptions(qId, q, part);
+}
+
+function addOption(qId, sectionId, part) {
+  const q = findQuestion(qId, part);
+  if (!q) return;
+  q.options.push('New option');
+  saveQuestions();
+  openEditor(qId, sectionId, part);
+  refreshInputOptions(qId, q, part);
+}
+
+function updateScaleLabel(qId, sectionId, part, key, val) {
+  const q = findQuestion(qId, part);
+  if (q) { q[key] = val; saveQuestions(); }
+}
+
+function refreshInputOptions(qId, q, part) {
+  // Rebuild only the input area (above the editor)
+  const block = document.getElementById('qblock_' + qId);
+  if (!block) return;
+  // Remove old inputs (everything between q-label and q-editor)
+  const allChildren = Array.from(block.children);
+  allChildren.forEach(child => {
+    if (!child.classList.contains('q-label') && !child.classList.contains('q-editor') && !child.classList.contains('q-edit-btn')) {
+      child.remove();
+    }
+  });
+  // Re-render inputs
+  const tempDiv = document.createElement('div');
+  let inner = '';
+  if (q.type === 'radio' || q.type === 'checkbox') {
+    inner = q.options.map((opt,i) =>
+      `<input type="${q.type}" name="${q.name}" id="${q.id}_${i}" value="${opt}" class="opt-input">
+       <label for="${q.id}_${i}" class="opt-label">${opt}</label>`
+    ).join('');
+  } else if (q.type === 'pills') {
+    inner = `<div class="pill-row">` + q.options.map((opt,i) =>
+      `<input type="radio" name="${q.name}" id="${q.id}_${i}" value="${opt}" class="pill-input">
+       <label for="${q.id}_${i}" class="pill-label">${opt}</label>`
+    ).join('') + `</div>`;
+  }
+  tempDiv.innerHTML = inner;
+  const editorEl = document.getElementById('qeditor_' + qId);
+  if (editorEl) block.insertBefore(tempDiv, editorEl);
+  // Unwrap
+  while (tempDiv.firstChild) block.insertBefore(tempDiv.firstChild, tempDiv);
+  block.removeChild(tempDiv);
+}
+
+// ═══════════════════════════════════════════════
+// EDIT MODE TOGGLE
+// ═══════════════════════════════════════════════
+function toggleEditMode() {
+  editMode = !editMode;
+  const btn = document.getElementById('editToggleBtn');
+  const banner = document.getElementById('editBanner');
+  const resetBtn = document.getElementById('resetBtn');
+
+  if (editMode) {
+    btn.classList.add('edit-active');
+    btn.textContent = '✏ EXIT EDIT MODE';
+    banner.classList.add('show');
+    resetBtn.style.display = 'block';
+    document.querySelectorAll('.q-block').forEach(b => b.classList.add('edit-mode-on'));
+  } else {
+    btn.classList.remove('edit-active');
+    btn.textContent = '✏ EDIT QUESTIONS';
+    banner.classList.remove('show');
+    resetBtn.style.display = 'none';
+    document.querySelectorAll('.q-block').forEach(b => b.classList.remove('edit-mode-on'));
+    document.querySelectorAll('.q-editor').forEach(e => e.classList.remove('open'));
+    openEditorId = null;
+  }
+}
+
+// ═══════════════════════════════════════════════
+// PART NAVIGATION
+// ═══════════════════════════════════════════════
+function showPart(n) {
+  if (n === 2 && !part2Unlocked) return;
+  document.getElementById('part1Panel').classList.toggle('active', n === 1);
+  document.getElementById('part2Panel').classList.toggle('active', n === 2);
+  document.getElementById('tab1').classList.toggle('active', n === 1);
+  document.getElementById('tab2').classList.toggle('active', n === 2);
+  document.getElementById('mainTitle').style.color = n === 2 ? 'var(--amber)' : 'var(--green)';
+  document.getElementById('mainTitle').style.textShadow = n === 2 ? '0 0 28px var(--amber-glow)' : '0 0 28px var(--green-glow)';
+  document.getElementById('partSubtitle').textContent = n === 2 ? 'Part 2 of 2 — Multi-Run Debrief' : 'Part 1 of 2 — First Run Debrief';
+}
+
+function unlockAndShowPart2() {
+  part2Unlocked = true;
+  localStorage.setItem('ff-p2-unlocked', 'true');
+  updateLock();
+  showPart(2);
+}
+
+function adminSkip() {
+  part2Unlocked = true;
+  localStorage.setItem('ff-p2-unlocked', 'true');
+  updateLock();
+  showPart(2);
+}
+
+function updateLock() {
+  const lock = document.getElementById('lockIcon');
+  if (part2Unlocked) {
+    lock.textContent = '';
+    document.getElementById('tab2').style.color = 'var(--amber)';
+  }
+}
+
+// ═══════════════════════════════════════════════
+// PROGRESS TRACKING
+// ═══════════════════════════════════════════════
+function setupProgress(formId, progressId, labelId, total) {
+  const form = document.getElementById(formId);
+  if (!form) return;
+  function update() {
+    const names = new Set();
+    form.querySelectorAll('[name]').forEach(el => names.add(el.name));
+    let answered = 0;
+    names.forEach(name => {
+      const els = form.querySelectorAll(`[name="${name}"]`);
+      if (Array.from(els).some(el => {
+        if (el.type === 'radio' || el.type === 'checkbox') return el.checked;
+        return el.value.trim().length > 0;
+      })) answered++;
+    });
+    const pct = Math.round((answered / total) * 100);
+    document.getElementById(progressId).style.width = pct + '%';
+    document.getElementById(labelId).textContent = answered + ' / ' + total + ' answered';
+  }
+  form.addEventListener('change', update);
+  form.addEventListener('input', update);
+}
+
+// ═══════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+updateLock();
+renderAll();
+</script>
+</body>
+</html>
